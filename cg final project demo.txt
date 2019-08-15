@@ -1,0 +1,421 @@
+#include<stdlib.h>
+#include<stdio.h>
+#include<stdarg.h>
+#include<GL/glut.h>
+
+static int menu_id;
+static int submenu_id;
+static int value = 0;
+static int window;
+static int SHAPE_MATERIAL = 1;
+
+enum {
+	BRASS, RED_PLASTIC, EMERALD, SLATE, GOLD, PEARL, CYAN_PLASTIC
+} MaterialType;
+
+enum {
+	LIGHT_OFF, LIGHT_RED, LIGHT_WHITE, LIGHT_GREEN
+} LightValues;
+
+static GLfloat theta[] = { 0.0,0.0,0.0 };
+static GLint axis = 2;
+
+GLfloat red_light[] = { 1.0,0.0,0.0,1.0 }, green_light[] = { 0.0,1.0,0.0,1.0 }, white_light[] = { 1.0,1.0,1.0,1.0 };
+
+GLfloat left_light_position[] = { -1.0,0.0,1.0,0.0 },
+right_light_position[] = { 1.0,0.0,1.0,0.0 },
+back_light_position[] = { 0.0,0.0,-1.0,0.0 };
+
+GLfloat brass_ambient[] = { 0.33,0.22,0.03,1.0 },
+brass_diffuse[] = { 0.78,0.58,0.11,1.0 },
+brass_specular[] = { 0.99,0.91,0.81,1.0 },
+brass_shininess = 27.8;
+
+GLfloat red_plastic_ambient[] = { 0.0,0.0,0.0 },
+red_plastic_diffuse[] = { 0.5,0.0,0.0 },
+red_plastic_specular[] = { 0.7,0.6,0.6 },
+red_plastic_shininess = 32.0;
+
+GLfloat emerald_ambient[] = { 0.0215,0.1745,0.0215 },
+emerald_diffuse[] = { 0.07568,0.61424,0.07568 },
+emerald_specular[] = { 0.633,0.727811,0.633 },
+emerald_shininess = 76.8;
+
+GLfloat slate_ambient[] = { 0.02,0.02,0.02 },
+slate_diffuse[] = { 0.02,0.01,0.01 },
+slate_specular[] = { 0.4,0.4,0.4 },
+slate_shininess = 0.78125;
+
+GLfloat gold_ambient[] = { 0.24725 ,0.1995 ,0.0745 },
+gold_diffuse[] = { 0.75164 ,0.60648 ,0.22648 },
+gold_specular[] = { 0.628281 ,0.55580,0.366065 },
+gold_shininess = 51.2;
+
+GLfloat pearl_ambient[] = { 0.25,0.20725,0.20725 },
+pearl_diffuse[] = { 1,0.829,0.829 },
+pearl_specular[] = { 0.296648,0.296648,0.296648 },
+pearl_shininess = 11.264;
+
+GLfloat cyan_plastic_ambient[] = { 0,0.1,0.06 },
+cyan_plastic_diffuse[] = { 0,0.50980392,0.50980392 },
+cyan_plastic_specular[] = { 0.50196078,0.50196078,0.50196078 },
+cyan_plastic_shininess = 32;
+
+int shade_model = GL_SMOOTH;
+const char *left_light, *right_light, *back_light;
+const char *sph_material, *teapot_material, *torus_material, *cube_material, *ico_material, *shape_material;
+
+void menu(int num) 
+{
+	if (num == 0) 
+	{
+		glutDestroyWindow(window);
+		exit(0);
+	}
+	else
+	{
+		value = num;
+	}
+	glutPostRedisplay();
+}
+
+void disp()
+{
+	printf_s("\t\t\tTopic: Luminous Effet And Rotation Of 3D Objects\n");
+	printf_s("\t\t\t\t\tName: SUPREETHA H R\n");
+	printf_s("\t\t\t\t\tUSN: 1RN16CS109\n\t\t\t\tCollege: R N S Institute Of Technology");
+}
+
+void createMenu(void)
+{
+	submenu_id = glutCreateMenu(menu);
+
+	glutAddMenuEntry("Torus", 2);
+	glutAddMenuEntry("Teapot", 3);
+	glutAddMenuEntry("Sphere", 4);
+	glutAddMenuEntry("Cube", 5);
+	glutAddMenuEntry("Icosahedron", 6);
+	menu_id = glutCreateMenu(menu);
+
+	glutAddSubMenu("Draw", submenu_id);
+	glutAddMenuEntry("Quit", 0);
+	glutAttachMenu(GLUT_LEFT_BUTTON);
+}
+
+void output(GLfloat x, GLfloat y, const char *format, ...)
+{
+	va_list args;
+	char buffer[200], *p;
+	va_start(args, format);
+	vsprintf_s(buffer, format, args);
+	va_end(args);
+	glPushMatrix();
+	glTranslatef(x, y, 0);
+	for (p = buffer; *p; p++)
+		glutStrokeCharacter(GLUT_STROKE_ROMAN, *p);
+	glPopMatrix();
+}
+
+void display(void)
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glScalef(1.3, 1.3, 1.3);
+	glRotatef(20.0, 1.0, 0.0, 0.0);
+
+	if (value == 1)
+	{
+		return;
+	}
+
+	else if (value == 2)
+	{
+		glPushMatrix();
+		glRotatef(60.0, 1.0, 0.0, 0.0);
+		glRotatef(theta[0], 1.0, 0.0, 0.0);
+		glRotatef(theta[1], 0.0, 1.0, 0.0);
+		glRotatef(theta[2], 0.0, 0.0, 1.0);
+		glCallList(SHAPE_MATERIAL);
+		glutSolidTorus(0.14, 0.55, 10, 15);
+		output(60, 2200, "Torus:%s", torus_material);
+		glPopMatrix();
+	}
+
+	else if (value == 3)
+	{
+		glPushMatrix();
+		glCallList(SHAPE_MATERIAL);
+		glutSolidTeapot(0.7);
+		output(60, 2350, "Teapot:%s", teapot_material);
+		glPopMatrix();
+	}
+
+	else if (value == 4)
+	{
+		glPushMatrix();
+		glRotatef(90.0, 1.0, 0.5, 1.0);
+		glRotatef(theta[0], 1.0, 0.0, 0.0);
+		glRotatef(theta[1], 0.0, 1.0, 0.0);
+		glRotatef(theta[2], 0.0, 0.0, 1.0);
+		glCallList(SHAPE_MATERIAL);
+		glutWireSphere(0.7, 12, 11);
+		output(60, 2500, "WiResphere:%s", cube_material);
+		glPopMatrix();
+	}
+
+	else if (value == 5)
+	{
+		glPushMatrix();
+		glRotatef(10.0, 1.0, 0.5, 1.0);
+		glRotatef(theta[0], 1.0, 0.0, 0.0);
+		glRotatef(theta[1], 0.0, 1.0, 0.0);
+		glRotatef(theta[2], 0.0, 0.0, 1.0);
+		glCallList(SHAPE_MATERIAL);
+		glutSolidCube(0.8);
+		output(60, 2630, "Cube:%s", sph_material);
+		glPopMatrix();
+	}
+
+	else if (value == 6)
+	{
+		glPushMatrix();
+		glRotatef(10.0, 1.0, 0.5, 1.0);
+		glRotatef(theta[0], 1.0, 0.0, 0.0);
+		glRotatef(theta[1], 0.0, 1.0, 0.0);
+		glRotatef(theta[2], 0.0, 0.0, 1.0);
+		glCallList(SHAPE_MATERIAL);
+		glutSolidIcosahedron();
+		output(60, 2750, "Icosahedron:%s", ico_material);
+		glPopMatrix();
+	}
+
+	glPopMatrix();
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0, 3000, 0, 3000);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	output(60, 250, "Left light:%s", left_light);
+	output(60, 100, "Back light:%s", back_light);
+	output(1700, 250,"Right light:%s", right_light);
+	output(1700, 100,"Shade model:%s", shade_model == GL_SMOOTH ? "smooth" : "flat");
+
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glPopAttrib();
+	glFlush();
+	glutSwapBuffers();
+}
+
+void rotate()
+{
+	theta[axis] += 3;//used to increase the speed
+	if (theta[axis] > 360.0) theta[axis] -= 360.0;
+	display();
+	glutPostRedisplay();
+}
+
+void light_select(GLenum which, int value, const char **label)
+{
+	glEnable(which);
+	switch (value)
+	{
+	case LIGHT_OFF:
+		*label = "off";
+		glDisable(which);
+		break;
+	case LIGHT_RED:
+		*label = "red";
+		glLightfv(which, GL_DIFFUSE, red_light);
+		break;
+	case LIGHT_WHITE:
+		*label = "white";
+		glLightfv(which, GL_DIFFUSE, white_light);
+		break;
+	case LIGHT_GREEN:
+		*label = "green";
+		glLightfv(which, GL_DIFFUSE, green_light);
+		break;
+	}
+	glutPostRedisplay();
+}
+
+void left_light_select(int value)
+{
+	light_select(GL_LIGHT0, value, &left_light);
+}
+
+void right_light_select(int value)
+{
+	light_select(GL_LIGHT1, value, &right_light);
+}
+
+void back_light_select(int value)
+{
+	light_select(GL_LIGHT2, value, &back_light);
+}
+
+void material(int dlist, GLfloat *ambient, GLfloat *diffuse, GLfloat *specular, GLfloat shininess)
+{
+	glNewList(dlist, GL_COMPILE);
+	glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+	glMaterialf(GL_FRONT, GL_SHININESS, shininess);
+	glEndList();
+}
+
+const char *material_select(int object, int value)
+{
+	glutPostRedisplay();
+	switch (value)
+	{
+	case BRASS:
+		material(object, brass_ambient, brass_diffuse, brass_specular, brass_shininess);
+		return "brass";
+	case RED_PLASTIC:
+		material(object, red_plastic_ambient, red_plastic_diffuse, red_plastic_specular, red_plastic_shininess);
+		return "red plastic";
+	case EMERALD:
+		material(object, emerald_ambient, emerald_diffuse, emerald_specular, emerald_shininess);
+		return "emerald";
+	case SLATE:
+		material(object, slate_ambient, slate_diffuse, slate_specular, slate_shininess);
+		return "slate";
+	case GOLD:
+		material(object, gold_ambient, gold_diffuse, gold_specular, gold_shininess);
+		return "gold";
+	case PEARL:
+		material(object, pearl_ambient, pearl_diffuse, pearl_specular, pearl_shininess);
+		return "pearl";
+	case CYAN_PLASTIC:
+		material(object, cyan_plastic_ambient, cyan_plastic_diffuse, cyan_plastic_specular, cyan_plastic_shininess);
+		return " cyan";
+	}
+	return NULL;
+}
+
+void colour_select(int value)
+{
+	shape_material = material_select(SHAPE_MATERIAL, value);
+}
+
+void main_menu_select(int value)
+{
+	if (value == 666) exit(0);
+	glShadeModel(shade_model = value);
+	glutPostRedisplay();
+}
+
+void keys(unsigned char key, int x, int y)
+{
+	if (key == 'x' || key == 'X') axis = 0;
+	if (key == 'y' || key == 'Y') axis = 1;
+	if (key == 'z' || key == 'Z') axis = 2;
+}
+
+int i;
+void myReshape(int w, int h)
+{
+	glViewport(0, 0, w, h);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	if (w <= h)
+		glOrtho(-2.0, 2.0, -2.0*(GLfloat)h / (GLfloat)w, 2.0*(GLfloat)h / (GLfloat)w, -10.0, 10.0);
+	else
+		glOrtho(-2.0*(GLfloat)w / (GLfloat)h, 2.0*(GLfloat)w / (GLfloat)h, -2.0, 2.0, -10.0, 10.0);
+	glMatrixMode(GL_MODELVIEW);
+}
+
+int main(int argc, char **argv)
+{
+
+	int left_light_m, right_light_m, back_light_m, torus_m, teapot_m, sph_m, cube_m, ico_m, color_m;
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+	glutInitWindowSize(1500, 800);
+	disp();
+	window = glutCreateWindow("Luminous effect ad rotation of 3D objects");
+	createMenu();   
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glutDisplayFunc(display);
+	glutReshapeFunc(myReshape);
+	glutIdleFunc(rotate);
+
+	glutKeyboardFunc(keys);
+	left_light_m = glutCreateMenu(left_light_select);
+	glutAddMenuEntry("Disable", LIGHT_OFF);
+	glutAddMenuEntry("Red", LIGHT_RED);
+	glutAddMenuEntry("White", LIGHT_WHITE);
+	glutAddMenuEntry("Green", LIGHT_GREEN);
+
+	right_light_m = glutCreateMenu(right_light_select);
+	glutAddMenuEntry("Disable", LIGHT_OFF);
+	glutAddMenuEntry("Red", LIGHT_RED);
+	glutAddMenuEntry("White", LIGHT_WHITE);
+	glutAddMenuEntry("Green", LIGHT_GREEN);
+
+	back_light_m = glutCreateMenu(back_light_select);
+	glutAddMenuEntry("Disable", LIGHT_OFF);
+	glutAddMenuEntry("Red", LIGHT_RED);
+	glutAddMenuEntry("White", LIGHT_WHITE);
+	glutAddMenuEntry("Green", LIGHT_GREEN);
+
+	color_m = glutCreateMenu(colour_select);
+	glutAddMenuEntry("brass", BRASS);
+	glutAddMenuEntry("Red plastic", RED_PLASTIC);
+	glutAddMenuEntry("Emerald", EMERALD);
+	glutAddMenuEntry("Slate", SLATE);
+	glutAddMenuEntry("Gold", GOLD);
+	glutAddMenuEntry("Pearl", PEARL);
+	glutAddMenuEntry("Cyan", CYAN_PLASTIC);
+
+	glutCreateMenu(main_menu_select);
+	glutAddMenuEntry("Smooth Shading", GL_SMOOTH);
+	glutAddMenuEntry("Flat Shading", GL_FLAT);
+	glutAddSubMenu("left light", left_light_m);
+	glutAddSubMenu("right light", right_light_m);
+	glutAddSubMenu("back light", back_light_m);
+	glutAddSubMenu("color", color_m);
+	
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+	glLightfv(GL_LIGHT0, GL_POSITION, left_light_position);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, white_light);
+	glLightfv(GL_LIGHT1, GL_POSITION, right_light_position);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, white_light);
+	glLightfv(GL_LIGHT2, GL_POSITION, back_light_position);
+	glLightfv(GL_LIGHT2, GL_SPECULAR, white_light);
+
+	left_light_select(LIGHT_RED);
+	right_light_select(LIGHT_WHITE);
+	back_light_select(LIGHT_GREEN);
+	colour_select(RED_PLASTIC);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_NORMALIZE);
+	glutMainLoop();
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
